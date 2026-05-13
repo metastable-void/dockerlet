@@ -19,6 +19,25 @@ this crate adheres to
   the dockerlet layer. Bollard feature set is deliberately narrow:
   only `pipe`, with no `home`, no `ssl`, no `ssl_providerless`, and
   no `rustls-native-certs`.
+- **Container leak fix.** Consumers commonly stash a `Container`
+  inside a `static OnceCell<...>` for a warm-test-fixture pattern;
+  Rust doesn't run `Drop` on statics at process exit, which would
+  leak the container indefinitely. dockerlet now registers a
+  `libc::atexit(3)` hook on first container start that sends a
+  best-effort stop (2-second SIGTERM grace) to every spawned
+  container at process termination. Combined with Docker's
+  `auto_remove: true` flag — now set by default on every
+  dockerlet-spawned container — the daemon reaps the stopped
+  container automatically. `Container::drop` unregisters from
+  the atexit registry first so explicit Drop and atexit don't
+  duplicate work.
+- `WaitFor::message_on_stderr` / `message_on_stdout` fail fast
+  when the container has exited before the readiness needle is
+  found. Previously, bollard's `logs`-follow stream would EOF
+  on a dead container and dockerlet would reopen the stream
+  until the startup deadline elapsed (~3 minutes of waste per
+  failure). Now an `inspect_container` between stream reopens
+  short-circuits to `Error::ReadinessFailed` with the exit code.
 
 ## [0.0.0]
 

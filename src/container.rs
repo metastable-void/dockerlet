@@ -55,6 +55,11 @@ impl Container {
 
 impl Drop for Container {
     fn drop(&mut self) {
+        // Unregister from atexit cleanup — this Drop is doing the
+        // work explicitly, so the atexit hook shouldn't duplicate
+        // on this container.
+        crate::atexit::unregister(&self.id);
+
         let docker = self.docker.clone();
         let id = self.id.clone();
         let slot = self.slot.take();

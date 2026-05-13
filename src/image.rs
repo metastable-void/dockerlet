@@ -74,6 +74,12 @@ impl GenericImage {
         pull_image_if_needed(&docker, &self.repo, &self.tag, &image).await?;
         let container_id = create_container(&docker, &image, &self).await?;
         docker.start_container(&container_id, None).await?;
+        // Register for process-exit cleanup; pair with Docker's
+        // `auto_remove: true` flag set in `create_container` so the
+        // daemon reaps the container automatically after stop.
+        // Containers that drop explicitly via `Container::drop`
+        // unregister themselves first.
+        crate::atexit::register(docker.clone(), container_id.clone());
 
         let waits = if self.waits.is_empty() {
             vec![WaitFor::Running]
@@ -131,7 +137,12 @@ async fn create_container(
         host_config: Some(HostConfig {
             port_bindings: port_bindings(generic),
             publish_all_ports: Some(true),
-            auto_remove: Some(false),
+            // `auto_remove: true` pairs with `atexit::register` in
+            // `start_with_slot`: when the atexit hook (or
+            // explicit Drop) sends a stop, the Docker daemon
+            // removes the container automatically — no separate
+            // remove_container call needed from atexit.
+            auto_remove: Some(true),
             ..Default::default()
         }),
         ..Default::default()
