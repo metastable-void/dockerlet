@@ -9,9 +9,16 @@ this crate adheres to
 
 ## [Unreleased]
 
-Implementation pending. See the
-[Philharmonic workspace ROADMAP](https://github.com/metastable-void/philharmonic-workspace/blob/main/ROADMAP.md)
-for the phase that populates this crate.
+## [0.1.0] - 2026-05-13
+
+- Initial substantive release. Provides the `GenericImage`
+  builder, `Container` handle, `WaitFor` readiness probe, and
+  cross-process concurrency-limit semaphore for workspace
+  integration tests.
+- Talks to the local Docker daemon over the Unix socket; no TLS at
+  the dockerlet layer. Bollard feature set is deliberately narrow:
+  only `pipe`, with no `home`, no `ssl`, no `ssl_providerless`, and
+  no `rustls-native-certs`.
 
 ## [0.0.0]
 
