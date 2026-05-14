@@ -1,6 +1,6 @@
 [package]
 name = "dockerlet"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.88"
 authors = ["metastable-void"]
@@ -14,12 +14,12 @@ categories = ["development-tools::testing", "api-bindings"]
 
 [dependencies]
 bollard = { version = "0.20", default-features = false, features = ["pipe"] }
-bytes = "1"
+bytes = { version = "1", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false }
-libc = "0.2"
-thiserror = "2"
+libc = { version = "0.2", default-features = false, features = ["std"] }
+thiserror = { version = "2", default-features = false, features = ["std"] }
 tokio = { version = "1", default-features = false, features = ["rt", "sync", "time", "net", "io-util"] }
-tracing = "0.1"
+tracing = { version = "0.1", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 tokio = { version = "1", default-features = false, features = ["macros", "rt"] }
